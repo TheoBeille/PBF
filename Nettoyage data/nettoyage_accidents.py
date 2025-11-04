@@ -1,53 +1,34 @@
 import pandas as pd
 import os
 
-# --- Chemins des fichiers ---
+
 DATA_DIR = "Données Brutes"
 OUTPUT_DIR = "Données Nettoyées"
 ACCIDENTS_FILE = os.path.join(DATA_DIR, "accidentologie0.csv")
 OUTPUT_FILE = os.path.join(OUTPUT_DIR, "accidents_velos.csv")
 
-os.makedirs(OUTPUT_DIR, exist_ok=True)
 
-# --- Chargement des données ---
 df = pd.read_csv(ACCIDENTS_FILE, sep=';', low_memory=False)
 
-# --- Filtrage : uniquement les accidents vélo ---
+
+
+#que les accidents de velo 
 if 'Mode' in df.columns:
-    df_velos = df[df['Mode'].str.lower().str.strip() == 'vélo']
-else:
-    df_velos = df.copy()
-
-# --- Normalisation des coordonnées ---
-# On cherche les colonnes de latitude et longitude
-lat_col = [c for c in df_velos.columns if 'lat' in c.lower()][0]
-lng_col = [c for c in df_velos.columns if 'lng' in c.lower() or 'lon' in c.lower()][0]
-
+    df = df[df['Mode'] == 'Vélo']
+    
+df = df.rename(columns={'Latitude': 'lat', 'Longitude': 'lon'})
 # Conversion et suppression des lignes invalides
-df_velos = df_velos.dropna(subset=[lat_col, lng_col])
-df_velos[lat_col] = df_velos[lat_col].astype(str).str.replace(',', '.').astype(float)
-df_velos[lng_col] = df_velos[lng_col].astype(str).str.replace(',', '.').astype(float)
+df = df.dropna(subset=['lat', 'lon']) #enleve les lignes sans coordonnées 
+df['lat'] = df['lat'].astype(str).str.replace(',', '.').astype(float)
+df['lon'] = df['lon'].astype(str).str.replace(',', '.').astype(float)
 
-#  Renommage en 'lat' et 'lon'
-df_velos = df_velos.rename(columns={lat_col: 'lat', lng_col: 'lon'})
 
-# --- Création des colonnes de gravité ---
-def gravite_from_categorie(val):
-    val = str(val)
-    if 'Tué' in val:
-        return pd.Series({'Tué': 1, 'Blessés hospitalisés': 0, 'Blessés Légers': 0})
-    elif 'Blessé hospitalisé' in val:
-        return pd.Series({'Tué': 0, 'Blessés hospitalisés': 1, 'Blessés Légers': 0})
-    elif 'Blessé léger' in val:
-        return pd.Series({'Tué': 0, 'Blessés hospitalisés': 0, 'Blessés Légers': 1})
-    else:
-        return pd.Series({'Tué': 0, 'Blessés hospitalisés': 0, 'Blessés Légers': 0})
+df['Tué']=3*df['Tué']
+df['Blessés hospitalisés']=2*df['Blessés hospitalisés']
+df["Gravité"] = df[["Blessés hospitalisés", "Tué", "Blessés Légers"]].sum(axis=1, skipna=True)
+#
+output_cols = ['lat', 'lon', 'Gravité']
+df_final = df[output_cols].copy()
+#print(df_final.head())
 
-df_velos[['Tué', 'Blessés hospitalisés', 'Blessés Légers']] = df_velos['Gravité'].apply(gravite_from_categorie)
-
-# --- Sélection des colonnes utiles ---
-output_cols = ['lat', 'lon', 'Tué', 'Blessés hospitalisés', 'Blessés Légers']
-df_final = df_velos[output_cols].copy()
-
-# --- Sauvegarde ---
 df_final.to_csv(OUTPUT_FILE, index=False, encoding='utf-8')
