@@ -3,8 +3,8 @@ import numpy as np
 import os
 from ast import literal_eval
 
-DATA_DIR = "Données Brutes"
-OUTPUT_DIR = "Données Nettoyées"
+DATA_DIR = "Données_Brutes"
+OUTPUT_DIR = "Données_Nettoyées"
 INFRA_FILE = os.path.join(DATA_DIR, "amenagements-cyclables.csv")
 OUTPUT_FILE = os.path.join(OUTPUT_DIR, "pistes-cyclables.csv")
 

@@ -2,8 +2,8 @@ import pandas as pd
 import os
 
 
-DATA_DIR = "Données Brutes"
-OUTPUT_DIR = "Données Nettoyées"
+DATA_DIR = "Données_Brutes"
+OUTPUT_DIR = "Données_Nettoyées"
 ACCIDENTS_FILE = os.path.join(DATA_DIR, "accidentologie0.csv")
 OUTPUT_FILE = os.path.join(OUTPUT_DIR, "accidents_velos.csv")
 
@@ -27,7 +27,7 @@ df['Tué']=3*df['Tué']
 df['Blessés hospitalisés']=2*df['Blessés hospitalisés']
 df["Gravité"] = df[["Blessés hospitalisés", "Tué", "Blessés Légers"]].sum(axis=1, skipna=True)
 #
-output_cols = ['lat', 'lon', 'Gravité']
+output_cols = ['Date','lat', 'lon', 'Gravité']
 df_final = df[output_cols].copy()
 #print(df_final.head())
 

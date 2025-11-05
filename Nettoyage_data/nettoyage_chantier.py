@@ -1,8 +1,8 @@
 import pandas as pd
 import os 
 
-DATA_DIR = "Données Brutes"
-OUTPUT_DIR = "Données Nettoyées"
+DATA_DIR = "Données_Brutes"
+OUTPUT_DIR = "Données_Nettoyées"
 ACCIDENTS_FILE = os.path.join(DATA_DIR, "chantiers-perturbants.csv")
 OUTPUT_FILE = os.path.join(OUTPUT_DIR, "chantiers_perturb.csv")
 
@@ -21,7 +21,9 @@ df_new[['lat', 'lon']] = df['geo_point_2d'].str.split(',', expand=True)
 
 # Nettoyage si données manquantes : On fait ici le choix de n'enlever que les lignes où les coordonnées (lat ou lon) sont 
 # manquantes + niveau de perturbation manquant car ce sont les deux seules données dont on a besoin pour estimer la perturbation je pense (à discuter)
-df_new = df_new.dropna(subset=['lat', 'lon', 'Niveau de perturbation'])
+df_new = df_new.dropna(subset=['lat', 'lon'])
+
+df_new.fillna({'Niveau de perturbation':0},inplace=True)
 
 #On convertit les types pour avoir des entiers : 
 df_new['lat'] = df_new['lat'].astype(str).str.replace(',', '.').astype(float)
